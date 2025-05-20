@@ -1,0 +1,28 @@
+services:
+  atlas:
+    image: sburn/apache-atlas:2.3.0
+    container_name: atlas
+    ports:
+      - "21000:21000"
+    environment:
+      - ATLAS_SERVER_BIND_HOST=0.0.0.0
+      - ATLAS_SERVER_OPTS=-server -Xmx2g
+    volumes:
+      - atlas_data:/opt/apache-atlas/data
+      - atlas_logs:/opt/apache-atlas/logs
+    networks:
+      - etl_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:21000/api/atlas/admin/version"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+volumes:
+  atlas_data:
+  atlas_logs:
+
+networks:
+  etl_network:
+    external: true

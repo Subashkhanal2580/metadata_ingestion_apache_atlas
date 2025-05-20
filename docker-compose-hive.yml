@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  # Apache Hive (Metastore)
+  hive:
+    image: apache/hive:3.1.3
+    container_name: hive
+    ports:
+      - "9083:9083"  # Metastore
+      - "10000:10000"  # HiveServer2
+      - "10002:10002"  # HiveServer2 Web UI
+    environment:
+      - HIVE_SITE_CONF_hive_metastore_uris=thrift://localhost:9083
+    volumes:
+      - ./config/hive-site.xml:/opt/apache-hive-3.1.3-bin/conf/hive-site.xml:ro
+      - ./data:/opt/hive/data
+    networks:
+      - etl_network
+
+networks:
+  etl_network:
+    external: true

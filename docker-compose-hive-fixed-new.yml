@@ -1,0 +1,72 @@
+version: '3'
+
+services:
+  hive-metastore-postgresql:
+    image: bde2020/hive-metastore-postgresql:2.3.0
+    container_name: hive-metastore-postgresql
+    volumes:
+      - hive-metastore-postgresql:/var/lib/postgresql
+    networks:
+      - etl_network
+
+  hive-metastore:
+    image: bde2020/hive:2.3.2-postgresql-metastore
+    container_name: hive-metastore
+    env_file:
+      - ./hive-env.env
+    environment:
+      SERVICE_PRECONDITION: "hive-metastore-postgresql:5432"
+    depends_on:
+      - hive-metastore-postgresql
+    networks:
+      - etl_network
+
+  hive-server:
+    image: bde2020/hive:2.3.2-postgresql-metastore
+    container_name: hive-server
+    env_file:
+      - ./hive-env.env
+    environment:
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionURL: "jdbc:postgresql://hive-metastore-postgresql/metastore"
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionDriverName: "org.postgresql.Driver"
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionUserName: "hive"
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionPassword: "hive"
+      HIVE_CORE_CONF_hive_metastore_uris: "thrift://hive-metastore:9083"
+      HIVE_CORE_CONF_hive_metastore_schema_verification: "false"
+      HIVE_CORE_CONF_hive_execution_engine: "tez"
+      SERVICE_PRECONDITION: "hive-metastore:9083"
+      
+      # Atlas integration
+      HIVE_SITE_CONF_hive_exec_post_hooks: "org.apache.atlas.hive.hook.HiveHook"
+      HIVE_SITE_CONF_atlas_hook_hive_synchronous: "true"
+      HIVE_SITE_CONF_atlas_cluster_name: "primary"
+      HIVE_SITE_CONF_atlas_rest_address: "http://atlas:21000"
+      
+      # Additional configurations to fix connectivity
+      HIVE_SERVER2_THRIFT_PORT: "10000"
+      HIVE_SERVER2_THRIFT_BIND_HOST: "0.0.0.0"
+      HIVE_SITE_CONF_hive_server2_transport_mode: "binary"
+      HIVE_SITE_CONF_hive_server2_thrift_bind_host: "0.0.0.0"
+      HIVE_SITE_CONF_hive_server2_thrift_port: "10000"
+      HIVE_SITE_CONF_hive_server2_enable_doAs: "false"
+    ports:
+      - "10000:10000"
+      - "10002:10002"
+    depends_on:
+      - hive-metastore
+    networks:
+      - etl_network
+    volumes:
+      - ./data:/input
+      - ./hive-atlas-bridge:/opt/hive/atlas-hook
+    command: >
+      sh -c "
+      cp -r /opt/hive/atlas-hook/* /opt/hive/lib/ && 
+      /entrypoint.sh /opt/hive/bin/hiveserver2"
+
+volumes:
+  hive-metastore-postgresql:
+
+networks:
+  etl_network:
+    external: true

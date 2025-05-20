@@ -1,0 +1,93 @@
+
+{
+  "roles": {
+    "ROLE_ADMIN": {
+      "adminPermissions": [
+        {
+          "privileges": ["*"]
+        }
+      ],
+      "typePermissions": [
+        {
+          "privileges": ["*"],
+          "typeCategories": ["*"],
+          "typeNames": ["*"]
+        }
+      ],
+      "entityPermissions": [
+        {
+          "privileges": ["*"],
+          "entityTypes": ["*"],
+          "entityIds": ["*"],
+          "classifications": ["*"],
+          "labels": ["*"]
+        }
+      ]
+    },
+    "ROLE_DATA_STEWARD": {
+      "adminPermissions": [
+        {
+          "privileges": ["type-create", "type-update", "entity-create", "entity-update", "entity-read"]
+        }
+      ],
+      "typePermissions": [
+        {
+          "privileges": ["create", "update", "read"],
+          "typeCategories": ["*"],
+          "typeNames": ["*"]
+        }
+      ],
+      "entityPermissions": [
+        {
+          "privileges": ["read", "update", "create", "delete"],
+          "entityTypes": ["*"],
+          "entityIds": ["*"],
+          "classifications": ["*"],
+          "labels": ["*"]
+        }
+      ]
+    },
+    "ROLE_DATA_SCIENTIST": {
+      "adminPermissions": [
+        {
+          "privileges": ["entity-read"]
+        }
+      ],
+      "typePermissions": [
+        {
+          "privileges": ["read"],
+          "typeCategories": ["*"],
+          "typeNames": ["*"]
+        }
+      ],
+      "entityPermissions": [
+        {
+          "privileges": ["read", "update"],
+          "entityTypes": ["*"],
+          "entityIds": ["*"],
+          "classifications": ["*"],
+          "labels": ["*"]
+        }
+      ]
+    },
+    "ROLE_USER": {
+      "adminPermissions": [],
+      "typePermissions": [
+        {
+          "privileges": ["read"],
+          "typeCategories": ["*"],
+          "typeNames": ["*"]
+        }
+      ],
+      "entityPermissions": [
+        {
+          "privileges": ["read"],
+          "entityTypes": ["*"],
+          "entityIds": ["*"],
+          "classifications": ["*"],
+          "labels": ["*"]
+        }
+      ]
+    }
+  }
+}

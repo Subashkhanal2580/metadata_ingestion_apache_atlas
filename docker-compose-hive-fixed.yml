@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # Using big-data-europe Hive image which is more stable than the official one
+  hive-server:
+    image: bde2020/hive:2.3.2-postgresql-metastore
+    container_name: hive-server
+    ports:
+      - "10000:10000"
+      - "10002:10002"
+    environment:
+      - HIVE_CORE_CONF_javax_jdo_option_ConnectionURL=jdbc:postgresql://hive-metastore-postgresql/metastore
+      - HIVE_CORE_CONF_javax_jdo_option_ConnectionDriverName=org.postgresql.Driver
+      - HIVE_CORE_CONF_javax_jdo_option_ConnectionUserName=hive
+      - HIVE_CORE_CONF_javax_jdo_option_ConnectionPassword=hive
+      - HIVE_CORE_CONF_datanucleus_autoCreateSchema=false
+      - HIVE_CORE_CONF_hive_metastore_uris=thrift://hive-metastore:9083
+      - HIVE_CORE_CONF_hive_metastore_schema_verification=true
+      - HIVE_CORE_CONF_hive_execution_engine=mr
+      - HIVE_CORE_CONF_hive_support_concurrency=false
+      - HIVE_CORE_CONF_hive_driver_parallel_compilation=true
+      - HIVE_CORE_CONF_hive_metastore_event_db_notification_api_auth=false
+      - HIVE_METASTORE_CONF_hive_metastore_event_db_notification_api_auth=false
+      # Atlas Hook configuration
+      - HIVE_SITE_CONF_atlas_cluster_name=primary
+      - HIVE_SITE_CONF_atlas_rest_address=http://atlas:21000
+      - HIVE_SITE_CONF_atlas_hook_hive_synchronous=true
+      - HIVE_SITE_CONF_hive_exec_post_hooks=org.apache.atlas.hive.hook.HiveHook
+    volumes:
+      - ./data:/opt/hive/data
+    networks:
+      - etl_network
+    depends_on:
+      - hive-metastore
+
+  hive-metastore:
+    image: bde2020/hive:2.3.2-postgresql-metastore
+    container_name: hive-metastore
+    ports:
+      - "9083:9083"
+    environment:
+      - SERVICE_PRECONDITION=hive-metastore-postgresql:5432
+      - HIVE_CORE_CONF_javax_jdo_option_ConnectionURL=jdbc:postgresql://hive-metastore-postgresql/metastore
+      - HIVE_CORE_CONF_javax_jdo_option_ConnectionDriverName=org.postgresql.Driver
+      - HIVE_CORE_CONF_javax_jdo_option_ConnectionUserName=hive
+      - HIVE_CORE_CONF_javax_jdo_option_ConnectionPassword=hive
+      - HIVE_CORE_CONF_datanucleus_autoCreateSchema=false
+      - HIVE_CORE_CONF_hive_metastore_schema_verification=true
+      - HIVE_CORE_CONF_hive_metastore_event_db_notification_api_auth=false
+      - HIVE_METASTORE_CONF_hive_metastore_event_db_notification_api_auth=false
+      # Atlas Hook configuration
+      - HIVE_SITE_CONF_atlas_cluster_name=primary
+      - HIVE_SITE_CONF_atlas_rest_address=http://atlas:21000
+      - HIVE_SITE_CONF_atlas_hook_hive_synchronous=true
+    networks:
+      - etl_network
+    command: /opt/hive/bin/hive --service metastore
+    depends_on:
+      - hive-metastore-postgresql
+
+  hive-metastore-postgresql:
+    image: bde2020/hive-metastore-postgresql:2.3.0
+    container_name: hive-metastore-postgresql
+    ports:
+      - "5432:5432"
+    volumes:
+      - hive-metastore-postgresql-data:/var/lib/postgresql/data
+    networks:
+      - etl_network
+
+volumes:
+  hive-metastore-postgresql-data:
+
+networks:
+  etl_network:
+    external: true
