@@ -43,13 +43,13 @@ def check_atlas_status():
         
         # Check connection
         if atlas_client.check_connection():
-            print("✅ Atlas connection successful")
+            print("Atlas connection successful")
             return True
         else:
-            print("❌ Could not connect to Atlas")
+            print("Could not connect to Atlas")
             return False
     except Exception as e:
-        print(f"❌ Error checking Atlas status: {str(e)}")
+        print(f"Error checking Atlas status: {str(e)}")
         raise
 
 def create_hive_table():
@@ -126,13 +126,13 @@ def ingest_metadata_to_atlas():
         success = create_sample_etl_lineage(atlas_client, pipeline_name)
         
         if success:
-            print("✅ Successfully ingested metadata into Atlas")
+            print("Successfully ingested metadata into Atlas")
             return True
         else:
-            print("❌ Failed to ingest metadata into Atlas")
+            print("Failed to ingest metadata into Atlas")
             return False
     except Exception as e:
-        print(f"❌ Error ingesting metadata: {str(e)}")
+        print(f"Error ingesting metadata: {str(e)}")
         raise
 
 def verify_metadata_in_atlas():
@@ -160,10 +160,10 @@ def verify_metadata_in_atlas():
             missing_entities.append(f"{entity['type']}:{entity['name']}")
     
     if missing_entities:
-        print(f"❌ The following entities are missing in Atlas: {', '.join(missing_entities)}")
+        print(f"The following entities are missing in Atlas: {', '.join(missing_entities)}")
         return False
     
-    print("✅ All expected entities are present in Atlas")
+    print("All expected entities are present in Atlas")
     
     # Check for lineage - verify the transformed_data table has lineage
     transformed_entity = atlas_client.get_entity_by_attribute("hive_table", "name", "transformed_data")
@@ -176,10 +176,10 @@ def verify_metadata_in_atlas():
             lineage_data = lineage_response.json()
             relations = lineage_data.get('relations', {})
             if relations and len(relations) > 0:
-                print("✅ Lineage information is available!") 
+                print("Lineage information is available!") 
                 return True
             else:
-                print("⚠️ Lineage information is missing or incomplete")
+                print("Lineage information is missing or incomplete")
     
     return False
 
